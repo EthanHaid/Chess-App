@@ -19,24 +19,61 @@ public abstract class Player {
       team = aTeam;
    }
 
-   public void executeMove(Piece piece, Point point) { //moves a piece and kills the opposition
+   public void executeMove(Piece piece, Point point) {
+     executeMove(piece, point, null);
+   }
+//TODO: update readme to include 3rd param option
+   public void executeMove(Piece piece, Point point, String promoteTo) { //moves a piece and kills the opposition
       moveWasMade = true;
-      piece.setPosition(point);
 
       if(piece instanceof King && ((King) piece).validCastles() != null) { //detect if castling
          for(Point p : ((King) piece).validCastles()) {
             if(p.equals(point)) { //script for castling
-               if(piece.getTile().x < board.getNumTiles() / 2) { //castling with left piece
-                  pieceAt(new Point(0, piece.getTile().y))
-                  .setPosition(new Point(piece.getTile().x + 1, piece.getTile().y));
+               if(point.x < (board.getNumTiles() / 2)) { //castling with left piece
+                  pieceAt(new Point(0, point.y))
+                  .setPosition(new Point(point.x + 1, point.y));
                } else { //castling with right piece
-                  pieceAt(new Point(board.getNumTiles() - 1, piece.getTile().y))
-                  .setPosition(new Point(piece.getTile().x + 1, piece.getTile().y));
+                  pieceAt(new Point(board.getNumTiles() - 1, point.y))
+                  .setPosition(new Point(point.x - 1, point.y));
                }
             }
          }
       }
-      piece = getOpponent().pieceAt(point);
+
+      piece.setPosition(point); //move the piece
+
+      if(piece instanceof Pawn && point.y == ((startPos == 0)? (board.getNumTiles() - 1) : 0)) {
+        //TODO: it might be worth making cases pieces Pieces rather than Strings
+        Piece newPiece;
+        switch (promoteTo) {
+          case "Rook":
+            newPiece = new Rook(board, this, point.x, point.y);
+            alives.add(newPiece);
+            newPiece.resize();
+            break;
+          case "Knight":
+            newPiece = new Knight(board, this, point.x, point.y);
+            alives.add(newPiece);
+            newPiece.resize();
+            break;
+          case "Bishop":
+            newPiece = new Bishop(board, this, point.x, point.y);
+            alives.add(newPiece);
+            newPiece.resize();
+            break;
+          case "Queen":
+            newPiece = new Queen(board, this, point.x, point.y);
+            alives.add(newPiece);
+            newPiece.resize();
+            break;
+          default:
+            break;
+        }
+        piece.setIsAlive(false);
+        alives.remove(piece);
+      }
+
+      piece = getOpponent().pieceAt(point); //takes any opponent piece
       if(piece != null) {
          piece.setIsAlive(false);
          getOpponent().getAlives().remove(piece);

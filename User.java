@@ -55,9 +55,23 @@ public class User extends Player {
          if(p.equals(tileAt(mousePos))) isValid = true; //asserts that the destination is valid
       }
       if(onBoard(tileAt(mousePos)) && pieceAt(tileAt(mousePos)) == null && isValid) {
-         executeMove(tracking, tileAt(mousePos)); //move the piece to its new location
+        if(tracking instanceof Pawn && tileAt(mousePos).y == ((getStartPos() == 0)? (getBoard().getNumTiles() - 1) : 0)) {
+          executeMove(tracking, tileAt(mousePos), upgradeTo());
+        } else {
+          executeMove(tracking, tileAt(mousePos)); //move the piece to its new location
+        }
       }
       tracking = null;
+   }
+
+   private String upgradeTo() { //asks the user what (s)he would like to upgrade the piece to
+     //TODO: make a GUI for this plis
+     //might be worth returning Pieces, rather than Strings.idk.
+     System.out.println("What would you like to upgrade this piece to?");
+     System.out.println("Rook, Knight, Bishop, or Queen?");
+
+     java.util.Scanner reader = new java.util.Scanner(System.in);
+     return reader.nextLine();
    }
 
    public void setMousePos(Point aMousePos) {

@@ -29,7 +29,7 @@ public class Pawn extends Piece {
          getOpponent().pieceAt(p) == null) {
             valids.add(p); //adds the tile directly in front of the piece.
       }
-      if(hasMoved == false) {
+      if(hasMoved == false && valids.isEmpty() == false) {
          p = new Point(getTile().x, getTile().y + (2 * dir));
          if(onBoard(p) && pieceAt(p) == null && getOpponent().pieceAt(p) == null) {
                valids.add(p); //adds the tile 2 spaces in front of the piece.

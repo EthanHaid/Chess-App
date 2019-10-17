@@ -57,15 +57,30 @@ public class King extends Piece {
             if(isValid(new Point(getTile().x + 1, getTile().y)) &&
             isValid(new Point(getTile().x + 2, getTile().y))) {
                valids.add(new Point(getTile().x + 2, getTile().y));
-               //TODO: do the short castle and move the castle itself pls
             }
          }
       }
-
       return valids;
    }
 
    private boolean isValid(Point p) {
       return (onBoard(p) && pieceAt(p) == null);
+   }
+
+   /* TODO: HERE'S THE PROBLEM, ALRIGHT
+      in order to determine checkmate (win condition), i need to determine every possible move
+      while this is easy now, my AI is going to need to project several turns ahead.
+      this requires CLONING the players, and then modifying the clones.
+
+      Point is, i need to make the players and pieces as lightweight as possible. Offload tasks
+      to some idea of "piece". all the "onboard" and "pieceAt" (maybe not pieceAt idk) should be there
+   */
+   public boolean isInCheck() { //returns true if the king is in check, false otherwise
+      for(Piece p : getOpponent().getAlives()) {
+         for(Point v : p.validTiles()) {
+            if(v.equals(getTile())) return true;
+         }
+      }
+      return false;
    }
 }
