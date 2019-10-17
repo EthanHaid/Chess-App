@@ -22,6 +22,20 @@ public abstract class Player {
    public void executeMove(Piece piece, Point point) { //moves a piece and kills the opposition
       moveWasMade = true;
       piece.setPosition(point);
+
+      if(piece instanceof King && ((King) piece).validCastles() != null) { //detect if castling
+         for(Point p : ((King) piece).validCastles()) {
+            if(p.equals(point)) { //script for castling
+               if(piece.getTile().x < board.getNumTiles() / 2) { //castling with left piece
+                  pieceAt(new Point(0, piece.getTile().y))
+                  .setPosition(new Point(piece.getTile().x + 1, piece.getTile().y));
+               } else { //castling with right piece
+                  pieceAt(new Point(board.getNumTiles() - 1, piece.getTile().y))
+                  .setPosition(new Point(piece.getTile().x + 1, piece.getTile().y));
+               }
+            }
+         }
+      }
       piece = getOpponent().pieceAt(point);
       if(piece != null) {
          piece.setIsAlive(false);
@@ -54,17 +68,17 @@ public abstract class Player {
 
       //add the powerful pieces
       int i=0;
-      alives.add(new Rook(board, team, i++, (startPos * (board.getNumTiles() - 1))));
-      alives.add(new Knight(board, team, i++, (startPos * (board.getNumTiles() - 1))));
-      alives.add(new Bishop(board, team, i++, (startPos * (board.getNumTiles() - 1))));
-      alives.add(new Queen(board, team, i++, (startPos * (board.getNumTiles() - 1))));
-      alives.add(new King(board, team, i++, (startPos * (board.getNumTiles() - 1))));
-      alives.add(new Bishop(board, team, i++, (startPos * (board.getNumTiles() - 1))));
-      alives.add(new Knight(board, team, i++, (startPos * (board.getNumTiles() - 1))));
-      alives.add(new Rook(board, team, i++, (startPos * (board.getNumTiles() - 1))));
+      alives.add(new Rook(board, this, i++, (startPos * (board.getNumTiles() - 1))));
+      alives.add(new Knight(board, this, i++, (startPos * (board.getNumTiles() - 1))));
+      alives.add(new Bishop(board, this, i++, (startPos * (board.getNumTiles() - 1))));
+      alives.add(new Queen(board, this, i++, (startPos * (board.getNumTiles() - 1))));
+      alives.add(new King(board, this, i++, (startPos * (board.getNumTiles() - 1))));
+      alives.add(new Bishop(board, this, i++, (startPos * (board.getNumTiles() - 1))));
+      alives.add(new Knight(board, this, i++, (startPos * (board.getNumTiles() - 1))));
+      alives.add(new Rook(board, this, i++, (startPos * (board.getNumTiles() - 1))));
 
       for(i=0; i<board.getNumTiles(); i++) { //add the pawns
-         alives.add(new Pawn(board, team, i, (startPos * (board.getNumTiles() - 3) + 1)));
+         alives.add(new Pawn(board, this, i, (startPos * (board.getNumTiles() - 3) + 1)));
       }
    }
 
@@ -87,8 +101,8 @@ public abstract class Player {
       ((int)(p.y - board.getPos().y) / (int) board.getTileHeight()));
    }
 
-   public boolean onBoard(Point p) { //returns if a coordinate is hovering over the board
-      if(p.x < 0 || p.y < 0) return false;
+   public boolean onBoard(Point p) { //returns if a tile is upon the board
+      if(p.x < 0 || p.y < 0 || p.x >= board.getNumTiles() || p.y >= board.getNumTiles()) return false;
       return true;
    }
 

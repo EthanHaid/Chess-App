@@ -5,18 +5,36 @@ import java.util.ArrayList;
 public class Bishop extends Piece {
    private final static String[] IMGS = {"images/whites/bishop.png", "images/blacks/bishop.png"};
 
-   private boolean hasMoved = false; //if the piece has moved since the start of the game
-
-   public Bishop(Board board, int team, int xTile, int yTile) {
-      super(board, team, xTile, yTile);
-      super.setImg(IMGS[team]);
+   public Bishop(Board board, Player player, int xTile, int yTile) {
+      super(board, player, xTile, yTile);
+      setImg(IMGS[getTeam()]);
    }
 
-   //this method would give too much away from the EthanAI, so i've left it out.
-   //basically it just highlights all the possible locations a piece can move to.
+   //returns all the possible locations the piece can move to.
    public ArrayList<Point> validTiles() {
       ArrayList<Point> valids = new ArrayList<Point>();
-      //valids.add(new Point(4, 4));
+      valids.addAll(searchDirection(new Point(getTile()), new Point(1, 1)));
+      valids.addAll(searchDirection(new Point(getTile()), new Point(1, -1)));
+      valids.addAll(searchDirection(new Point(getTile()), new Point(-1, 1)));
+      valids.addAll(searchDirection(new Point(getTile()), new Point(-1, -1)));
+      return valids;
+   }
+
+   private ArrayList<Point> searchDirection(Point spot, Point dir) { //finds all the valid spots in a direction
+      ArrayList<Point> valids = new ArrayList<Point>();
+      boolean done = false;
+      do{
+         spot.x += dir.x;
+         spot.y += dir.y;
+         if(onBoard(spot) && pieceAt(spot) == null) {
+            valids.add(new Point(spot));
+         } else {
+            done = true;
+         }
+         if(getOpponent().pieceAt(spot) != null) {
+            done = true;
+         }
+      } while(done == false);
       return valids;
    }
 }

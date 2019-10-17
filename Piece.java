@@ -12,7 +12,7 @@ public abstract class Piece {
    private static final double TRACKING_MULTIPLIER = 1.15; //relative size of a selected piece
 
    private final Board board; //stores the board reference
-   private final int team; // stores the pieces team. 0 == white, 1 == black
+   private final Player player; //stores the player reference
 
    private Image fullSizeImg; //the unscaled image of the piece
    private Image img; //the sized image of the piece
@@ -25,9 +25,9 @@ public abstract class Piece {
    private int h;
 
 
-   public Piece(Board aBoard, int aTeam, int xTile, int yTile) {
+   public Piece(Board aBoard, Player aPlayer, int xTile, int yTile) {
       board = aBoard;
-      team = aTeam;
+      player = aPlayer;
       tile = new Point(xTile, yTile);
       pos = new Point();
       mouse = new Point();
@@ -87,8 +87,26 @@ public abstract class Piece {
    public Point getTile() {
       return tile;
    }
+   public Board getBoard() {
+      return board;
+   }
+   public Player getPlayer() {
+      return player;
+   }
+   public Player getOpponent() {
+      return player.getOpponent();
+   }
    public int getTeam() {
-      return team;
+      return player.getTeam();
+   }
+   public int getStartPos() {
+      return player.getStartPos();
+   }
+   public boolean onBoard(Point p) {
+      return player.onBoard(p);
+   }
+   public Piece pieceAt(Point p) {
+      return player.pieceAt(p);
    }
 
    public abstract ArrayList<Point> validTiles();

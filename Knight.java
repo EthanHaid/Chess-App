@@ -5,18 +5,32 @@ import java.util.ArrayList;
 public class Knight extends Piece {
    private final static String[] IMGS = {"images/whites/knight.png", "images/blacks/knight.png"};
 
-   private boolean hasMoved = false; //if the piece has moved since the start of the game
-
-   public Knight(Board board, int team, int xTile, int yTile) {
-      super(board, team, xTile, yTile);
-      super.setImg(IMGS[team]);
+   public Knight(Board board, Player player, int xTile, int yTile) {
+      super(board, player, xTile, yTile);
+      setImg(IMGS[getTeam()]);
    }
 
-   //this method would give too much away from the EthanAI, so i've left it out.
-   //basically it just highlights all the possible locations a piece can move to.
+   //returns all the possible locations the piece can move to.
    public ArrayList<Point> validTiles() {
       ArrayList<Point> valids = new ArrayList<Point>();
-      //valids.add(new Point(4, 4));
+
+      Point p = new Point(getTile().x + 1, getTile().y + 2);
+      if(onBoard(p) && pieceAt(p) == null) valids.add(p);
+      p = new Point(getTile().x + 2, getTile().y + 1);
+      if(onBoard(p) && pieceAt(p) == null) valids.add(p);
+      p = new Point(getTile().x + 2, getTile().y - 1);
+      if(onBoard(p) && pieceAt(p) == null) valids.add(p);
+      p = new Point(getTile().x + 1, getTile().y - 2);
+      if(onBoard(p) && pieceAt(p) == null) valids.add(p);
+      p = new Point(getTile().x - 1, getTile().y - 2);
+      if(onBoard(p) && pieceAt(p) == null) valids.add(p);
+      p = new Point(getTile().x - 2, getTile().y - 1);
+      if(onBoard(p) && pieceAt(p) == null) valids.add(p);
+      p = new Point(getTile().x - 2, getTile().y + 1);
+      if(onBoard(p) && pieceAt(p) == null) valids.add(p);
+      p = new Point(getTile().x - 1, getTile().y + 2);
+      if(onBoard(p) && pieceAt(p) == null) valids.add(p);
+
       return valids;
    }
 }

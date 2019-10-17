@@ -49,7 +49,12 @@ public class User extends Player {
       tracking.setCurrentlyTracking(false);
       tracking.resize();
       getBoard().setValidTiles(null);
-      if(onBoard(tileAt(mousePos)) && pieceAt(tileAt(mousePos)) == null) { //TODO: one of these conditions has to include the "valid" location param of Piece
+
+      boolean isValid = false;
+      for(Point p : tracking.validTiles()) {
+         if(p.equals(tileAt(mousePos))) isValid = true; //asserts that the destination is valid
+      }
+      if(onBoard(tileAt(mousePos)) && pieceAt(tileAt(mousePos)) == null && isValid) {
          executeMove(tracking, tileAt(mousePos)); //move the piece to its new location
       }
       tracking = null;

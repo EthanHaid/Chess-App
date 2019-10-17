@@ -7,16 +7,45 @@ public class Rook extends Piece {
 
    private boolean hasMoved = false; //if the piece has moved since the start of the game
 
-   public Rook(Board board, int team, int xTile, int yTile) {
-      super(board, team, xTile, yTile);
-      super.setImg(IMGS[team]);
+   public Rook(Board board, Player player, int xTile, int yTile) {
+      super(board, player, xTile, yTile);
+      setImg(IMGS[getTeam()]);
    }
 
-   //this method would give too much away from the EthanAI, so i've left it out.
-   //basically it just highlights all the possible locations a piece can move to.
+   public void setPosition(Point tile) { //overrides piece method to include a hasMoved status
+      super.setPosition(tile);
+      hasMoved = true;
+   }
+
+   //returns all the possible locations the piece can move to.
    public ArrayList<Point> validTiles() {
       ArrayList<Point> valids = new ArrayList<Point>();
-      //valids.add(new Point(4, 4));
+      valids.addAll(searchDirection(new Point(getTile()), new Point(1, 0)));
+      valids.addAll(searchDirection(new Point(getTile()), new Point(-1, 0)));
+      valids.addAll(searchDirection(new Point(getTile()), new Point(0, 1)));
+      valids.addAll(searchDirection(new Point(getTile()), new Point(0, -1)));
       return valids;
+   }
+
+   private ArrayList<Point> searchDirection(Point spot, Point dir) { //finds all the valid spots in a direction
+      ArrayList<Point> valids = new ArrayList<Point>();
+      boolean done = false;
+      do{
+         spot.x += dir.x;
+         spot.y += dir.y;
+         if(onBoard(spot) && pieceAt(spot) == null) {
+            valids.add(new Point(spot));
+         } else {
+            done = true;
+         }
+         if(getOpponent().pieceAt(spot) != null) {
+            done = true;
+         }
+      } while(done == false);
+      return valids;
+   }
+
+   public boolean hasMoved() {
+      return hasMoved;
    }
 }
