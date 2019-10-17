@@ -1,9 +1,13 @@
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import java.util.ArrayList;
 
 public class Pawn extends Piece {
    private final static String[] IMGS = {"images/whites/pawn.png", "images/blacks/pawn.png"};
+   private final static int PIECE_VALUE = 100;
 
    private final int dir; //the direction of "foreward movement": 1 for down, -1 for up
 
@@ -11,7 +15,6 @@ public class Pawn extends Piece {
 
    public Pawn(Board board, Player player, int xTile, int yTile) {
       super(board, player, xTile, yTile);
-      setImg(IMGS[getTeam()]);
       dir = (getStartPos() == 0)? 1 : -1;
    }
 
@@ -46,5 +49,29 @@ public class Pawn extends Piece {
       }
       //TODO: include en-passant if you want
       return valids;
+   }
+
+   //set the image to the appropriate file import
+   public void setImg() {
+      try{
+         super.fullSizeImg = ImageIO.read(new File(IMGS[getTeam()]));
+      } catch(IOException e){
+         //TODO: is this really what i want in here?
+         e.printStackTrace();
+      }
+   }
+
+   public Piece copy() { //returns a copy of this piece
+      Pawn p = new Pawn(getBoard(), getPlayer(), getTile().x, getTile().y);
+      p.setHasMoved(hasMoved);
+      return p;
+   }
+
+   public void setHasMoved(boolean setTo) {
+      hasMoved = setTo; //TODO you are here
+   }
+
+   public int getValue() {
+      return PIECE_VALUE;
    }
 }

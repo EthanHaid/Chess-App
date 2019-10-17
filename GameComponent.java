@@ -33,9 +33,8 @@ public class GameComponent extends JComponent implements MouseListener {
       //TODO: create a graveyard
 
       Player player1 = new User(board, 1, 0); //creates Player(board, starting position, team color)
+      //Player player2 = new User(board, 0, 1);
       Player player2 = new User(board, 0, 1);
-      //Player player2 = new NoahAI(board, 0, 1);
-      //Player player2 = new JenAI(board, 0, 1);
 
       playerTurn = (player1.getTeam() == 0)? 0 : 1; //sets the white team to have first turn.
       player1.setOpponent(player2);
@@ -67,7 +66,11 @@ public class GameComponent extends JComponent implements MouseListener {
          ((User)players[playerTurn]).setMousePos(mousePos);
          ((User)players[playerTurn]).setMouseDown(mouseDown);
       }
-      players[playerTurn].makeMove(); //player make its move
+      try {
+         players[playerTurn].makeMove(); //player make its move
+      } catch(InterruptedException e) {
+         System.out.println("THREADS ARE CAUSING ISSUES");
+      }
       if(players[playerTurn].getMoveWasMade()) { //next player's turn
          playerTurn = (playerTurn == 0)? 1 : 0;
       }

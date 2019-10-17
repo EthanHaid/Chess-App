@@ -1,15 +1,18 @@
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import java.util.ArrayList;
 
 public class Rook extends Piece {
    private final static String[] IMGS = {"images/whites/rook.png", "images/blacks/rook.png"};
+   private final static int PIECE_VALUE = 300;
 
    private boolean hasMoved = false; //if the piece has moved since the start of the game
 
    public Rook(Board board, Player player, int xTile, int yTile) {
       super(board, player, xTile, yTile);
-      setImg(IMGS[getTeam()]);
    }
 
    public void setPosition(Point tile) { //overrides piece method to include a hasMoved status
@@ -47,5 +50,29 @@ public class Rook extends Piece {
 
    public boolean hasMoved() {
       return hasMoved;
+   }
+
+   //set the image to the appropriate file import
+   public void setImg() {
+      try{
+         super.fullSizeImg = ImageIO.read(new File(IMGS[getTeam()]));
+      } catch(IOException e){
+         //TODO: is this really what i want in here?
+         e.printStackTrace();
+      }
+   }
+
+   public Piece copy() { //returns a copy of this piece
+      Rook r = new Rook(getBoard(), getPlayer(), getTile().x, getTile().y);
+      r.setHasMoved(hasMoved);
+      return r;
+   }
+
+   public void setHasMoved(boolean setTo) {
+      hasMoved = setTo; //TODO you are here
+   }
+
+   public int getValue() {
+      return PIECE_VALUE;
    }
 }

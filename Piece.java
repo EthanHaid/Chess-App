@@ -12,9 +12,9 @@ public abstract class Piece {
    private static final double TRACKING_MULTIPLIER = 1.15; //relative size of a selected piece
 
    private final Board board; //stores the board reference
-   private final Player player; //stores the player reference
+   private Player player; //stores the player reference
 
-   private Image fullSizeImg; //the unscaled image of the piece
+   protected Image fullSizeImg; //the unscaled image of the piece
    private Image img; //the sized image of the piece
    private boolean currentlyTracking = false; //if the piece is tracking the mouse
    private boolean isAlive = true;
@@ -49,6 +49,7 @@ public abstract class Piece {
 
    }
 
+   //TODO: assert dimensions are non-zero
    public void resize() {
       if(currentlyTracking) {
          w = (int)(board.getTileWidth() * TRACKING_MULTIPLIER);
@@ -58,15 +59,6 @@ public abstract class Piece {
          h = (int)board.getTileHeight();
       }
       img = fullSizeImg.getScaledInstance(w, h, Image.SCALE_SMOOTH);
-   }
-
-   public void setImg(String url) {
-      try{
-         fullSizeImg = ImageIO.read(new File(url));
-      } catch(IOException e){
-         //TODO: is this really what i want in here?
-         e.printStackTrace();
-      }
    }
 
    //setter methods
@@ -81,6 +73,9 @@ public abstract class Piece {
    }
    public void setIsAlive(boolean setTo) {
       isAlive = setTo;
+   }
+   public void setPlayer(Player aPlayer) {
+      player = aPlayer;
    }
 
    //getter methods
@@ -110,4 +105,10 @@ public abstract class Piece {
    }
 
    public abstract ArrayList<Point> validTiles();
+
+   public abstract void setImg();
+
+   public abstract Piece copy();
+
+   public abstract int getValue();
 }

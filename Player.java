@@ -22,13 +22,14 @@ public abstract class Player {
    public void executeMove(Piece piece, Point point) {
      executeMove(piece, point, null);
    }
-//TODO: update readme to include 3rd param option
+
+   //TODO: update readme to include 3rd param option
    public void executeMove(Piece piece, Point point, String promoteTo) { //moves a piece and kills the opposition
       moveWasMade = true;
 
       if(piece instanceof King && ((King) piece).validCastles() != null) { //detect if castling
          for(Point p : ((King) piece).validCastles()) {
-            if(p.equals(point)) { //script for castling
+            if(p.equals(point)) { //script for castling TODO: fix for if there is no castle at that side???
                if(point.x < (board.getNumTiles() / 2)) { //castling with left piece
                   pieceAt(new Point(0, point.y))
                   .setPosition(new Point(point.x + 1, point.y));
@@ -44,33 +45,32 @@ public abstract class Player {
 
       if(piece instanceof Pawn && point.y == ((startPos == 0)? (board.getNumTiles() - 1) : 0)) {
         //TODO: it might be worth making cases pieces Pieces rather than Strings
+
+        piece.setIsAlive(false); //remove the old piece
+        alives.remove(piece);
+
         Piece newPiece;
         switch (promoteTo) {
           case "Rook":
             newPiece = new Rook(board, this, point.x, point.y);
-            alives.add(newPiece);
-            newPiece.resize();
             break;
           case "Knight":
             newPiece = new Knight(board, this, point.x, point.y);
-            alives.add(newPiece);
-            newPiece.resize();
             break;
           case "Bishop":
             newPiece = new Bishop(board, this, point.x, point.y);
-            alives.add(newPiece);
-            newPiece.resize();
             break;
           case "Queen":
             newPiece = new Queen(board, this, point.x, point.y);
-            alives.add(newPiece);
-            newPiece.resize();
             break;
           default:
+            newPiece = piece;
+            newPiece.setIsAlive(true);
             break;
         }
-        piece.setIsAlive(false);
-        alives.remove(piece);
+        alives.add(newPiece);
+        newPiece.setImg();
+        newPiece.resize();
       }
 
       piece = getOpponent().pieceAt(point); //takes any opponent piece
@@ -103,6 +103,10 @@ public abstract class Player {
       alives = new ArrayList<Piece>();
       deads = new ArrayList<Piece>();
 
+      for(int i=0; i<board.getNumTiles(); i++) { //add the pawns
+         alives.add(new Pawn(board, this, i, (startPos * (board.getNumTiles() - 3) + 1)));
+      }
+
       //add the powerful pieces
       int i=0;
       alives.add(new Rook(board, this, i++, (startPos * (board.getNumTiles() - 1))));
@@ -114,8 +118,8 @@ public abstract class Player {
       alives.add(new Knight(board, this, i++, (startPos * (board.getNumTiles() - 1))));
       alives.add(new Rook(board, this, i++, (startPos * (board.getNumTiles() - 1))));
 
-      for(i=0; i<board.getNumTiles(); i++) { //add the pawns
-         alives.add(new Pawn(board, this, i, (startPos * (board.getNumTiles() - 3) + 1)));
+      for(Piece p : alives) { //initalize piece images
+         p.setImg();
       }
    }
 
@@ -150,6 +154,9 @@ public abstract class Player {
    public void setMoveWasMade(boolean setTo) {
       moveWasMade = setTo;
    }
+   public void setAlives(ArrayList<Piece> aAlives) {
+      alives = aAlives;
+   }
 
    //getter methods
    public int getTeam() {
@@ -174,5 +181,5 @@ public abstract class Player {
       return moveWasMade;
    }
 
-   public abstract void makeMove(); //players have to have makeMove()
+   public abstract void makeMove() throws InterruptedException; //players have to have makeMove()
 }

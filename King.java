@@ -1,15 +1,18 @@
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import java.util.ArrayList;
 
 public class King extends Piece {
    private final static String[] IMGS = {"images/whites/king.png", "images/blacks/king.png"};
+   private final static int PIECE_VALUE = 1000000;
 
    private boolean hasMoved = false; //if the piece has moved since the start of the game
 
    public King(Board board, Player player, int xTile, int yTile) {
       super(board, player, xTile, yTile);
-      setImg(IMGS[getTeam()]);
    }
 
    public void setPosition(Point tile) { //overrides piece method to include a hasMoved status
@@ -67,14 +70,6 @@ public class King extends Piece {
       return (onBoard(p) && pieceAt(p) == null);
    }
 
-   /* TODO: HERE'S THE PROBLEM, ALRIGHT
-      in order to determine checkmate (win condition), i need to determine every possible move
-      while this is easy now, my AI is going to need to project several turns ahead.
-      this requires CLONING the players, and then modifying the clones.
-
-      Point is, i need to make the players and pieces as lightweight as possible. Offload tasks
-      to some idea of "piece". all the "onboard" and "pieceAt" (maybe not pieceAt idk) should be there
-   */
    public boolean isInCheck() { //returns true if the king is in check, false otherwise
       for(Piece p : getOpponent().getAlives()) {
          for(Point v : p.validTiles()) {
@@ -82,5 +77,23 @@ public class King extends Piece {
          }
       }
       return false;
+   }
+
+   //set the image to the appropriate file import
+   public void setImg() {
+      try{
+         super.fullSizeImg = ImageIO.read(new File(IMGS[getTeam()]));
+      } catch(IOException e){
+         //TODO: is this really what i want in here?
+         e.printStackTrace();
+      }
+   }
+
+   public Piece copy() { //returns a copy of this piece
+      return new King(getBoard(), getPlayer(), getTile().x, getTile().y);
+   }
+
+   public int getValue() {
+      return PIECE_VALUE;
    }
 }

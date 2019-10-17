@@ -8,7 +8,8 @@ import java.util.ArrayList;
 public class Board {
    private static final int NUM_TILES = 8; //number of tiles per edge
    private static final double MAX_BOARD_FILL = (double) 9 / 10; //max fraction of frame used
-   private static final Color FILL_COLOR = Color.GRAY; //color of the dark tiles
+   private static final Color FILL_COLOR_DARK = Color.GRAY; //color of the dark tiles
+   private static final Color FILL_COLOR_LIGHT = Color.WHITE; //color of the light tiles
    private static final Color HIGHLIGHT_COLOR = Color.YELLOW; // color of the highlighted tiles
    private static final Color BORDER_COLOR = Color.BLACK; //color of the outlines
 
@@ -27,12 +28,8 @@ public class Board {
    }
 
    public void draw(Graphics2D g2) {
-      //draws outline of board
-      Rectangle2D.Double board = new Rectangle2D.Double(pos.x, pos.y, width, height);
-      g2.setColor(BORDER_COLOR);
-      g2.draw(board);
 
-      //draws each tile
+      //draws each tile on board
       Rectangle2D.Double tile;
       double xDraw;
       double yDraw = pos.y;
@@ -52,13 +49,22 @@ public class Board {
                g2.fill(tile);
             } else if(i % 2 != j % 2) {
                tile = new Rectangle2D.Double(xDraw, yDraw, tileWidth, tileHeight);
-               g2.setColor(FILL_COLOR);
+               g2.setColor(FILL_COLOR_DARK);
+               g2.fill(tile);
+            } else {
+               tile = new Rectangle2D.Double(xDraw, yDraw, tileWidth, tileHeight);
+               g2.setColor(FILL_COLOR_LIGHT);
                g2.fill(tile);
             }
             xDraw += tileWidth;
          }
          yDraw += tileHeight;
       }
+
+      //draws outline of board
+      Rectangle2D.Double board = new Rectangle2D.Double(pos.x, pos.y, width, height);
+      g2.setColor(BORDER_COLOR);
+      g2.draw(board);
    }
 
    public void resize(int frameWidth, int frameHeight) {
