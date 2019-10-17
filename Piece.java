@@ -1,106 +1,87 @@
 import java.awt.Graphics2D;
-import java.awt.Color;
-import java.awt.image.BufferedImage;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
-//import javax.swing.*;
+import java.awt.Point;
+import java.util.ArrayList;
+import javax.swing.*;
 
-public class Piece {
+public abstract class Piece {
 
-   protected static final Color OUTLINE_COLOR = Color.BLACK;
-   //multiplier for size of piece while tracking the mouse
-   protected static final double TRACKING_MULTIPLIER = 1.15;
-   protected static final String WHITE = "white";
+   private static final double TRACKING_MULTIPLIER = 1.15; //relative size of a selected piece
 
-   protected final Board board;
-   protected final Color fillColor;
-   protected final String color;
-   //url of the image
-   private final String imgURL;
-   private BufferedImage img;
+   private final Board board; //stores the board reference
+   private final int team; // stores the pieces team. 0 == white, 1 == black
 
-   //number of the tile the piece is on
-   protected int xTile;
-   protected int yTile;
-   //the x, y position of the piece
-   protected double x;
-   protected double y;
-   private double w;
-   private double h;
-   //if the mouse has selected this piece
-   protected boolean currentlyTracking = false;
-   //if the piece has moved since the start of the game
-   protected boolean hasMoved = false;
-   //the x, y position of the mouse, for use if tracking the mouse
-   protected int mouseX = 0;
-   protected int mouseY = 0;
+   private Image img; //the sized image of the piece
+   private boolean currentlyTracking = false; //if the piece is tracking the mouse
+   private Point mouse; //last known coordinate of the mouse
+   private Point tile; //location of the piece
+   private Point pos; //x,y position of the top left corner of the piece
+   private int w; //width and height of the piece
+   private int h;
 
-   //constructor
-   //(playing board, color of piece, x tile piece is on, y tile piece is on)
-   public Piece(Board boardA, String colorA, int xTileA, int yTileA, String imgURLA) {
-      board = boardA;
-      color = colorA;
-      if(color.equals(WHITE)){
-         fillColor = Color.WHITE;
-      } else{
-         fillColor = Color.BLACK;
+
+   public Piece(Board aBoard, int aTeam, int xTile, int yTile) {
+      board = aBoard;
+      team = aTeam;
+      tile = new Point(xTile, yTile);
+      pos = new Point();
+      mouse = new Point();
+   }
+
+
+   public void draw(Graphics2D g2) {
+      if(currentlyTracking) {
+         pos.x = (int)(mouse.x - (board.getTileWidth() * TRACKING_MULTIPLIER) / 2);
+         pos.y = (int)(mouse.y - (board.getTileWidth() * TRACKING_MULTIPLIER) / 2);
+      } else {
+         pos.x = (int)(board.getPos().x + (tile.x * board.getTileWidth()));
+         pos.y = (int)(board.getPos().y + (tile.y * board.getTileHeight()));
       }
-      xTile = xTileA;
-      yTile = yTileA;
-      imgURL = imgURLA;
+      g2.drawImage(img, pos.x, pos.y, null);
+   }
+
+   public void resize() {
+      //TODO: activate the tracking multiplier. also request a resize of tracked piece after begin or end tracking. make sure this isn't too laggy. hope.
+      if(currentlyTracking) {
+         w = (int)(board.getTileWidth() * TRACKING_MULTIPLIER);
+         h = (int)(board.getTileHeight() * TRACKING_MULTIPLIER);
+      } else {
+         w = (int)board.getTileWidth();
+         h = (int)board.getTileHeight();
+      }
+      img = img.getScaledInstance(w, h, Image.SCALE_SMOOTH);
+   }
+
+   public void setImg(String url) {
       try{
-         img = ImageIO.read(new File(imgURL));
+         img = ImageIO.read(new File(url));
       } catch(IOException e){
          //TODO: is this really what i want in here?
          e.printStackTrace();
       }
    }
 
-   //draw method
-   public void draw(Graphics2D g2) {
-      if(currentlyTracking){
-         x = mouseX - (board.getTileWidth() * TRACKING_MULTIPLIER) / 2;
-         y = mouseY - (board.getTileWidth() * TRACKING_MULTIPLIER) / 2;
-         w = board.getTileWidth() * TRACKING_MULTIPLIER;
-         h = board.getTileHeight() * TRACKING_MULTIPLIER;
-      }else{
-         x = board.getX() + (xTile * board.getTileWidth());
-         y = board.getY() + (yTile * board.getTileHeight());
-         w = board.getTileWidth();
-         h = board.getTileHeight();
-      }
-      //TODO: this is the line that's gotta be avoided at all costs plis
-      g2.drawImage(img.getScaledInstance((int)w, (int)h, Image.SCALE_SMOOTH), (int)x, (int)y, null);
-   }
-
-   public void setCurrentlyTracking(boolean setTo){
+   //setter methods
+   public void setCurrentlyTracking(boolean setTo) {
       currentlyTracking = setTo;
    }
-
-   public void setMouseX(int x){
-      mouseX = x;
+   public void setPosition(Point aTile) {
+      tile = aTile;
    }
-   public void setMouseY(int y){
-      mouseY = y;
-   }
-   public void setPosition(int xTileA, int yTileA){
-      xTile = xTileA;
-      yTile = yTileA;
+   public void setMouse(Point aMouse) {
+      mouse = aMouse;
    }
 
-   public int getXTile(){
-      return xTile;
+   //getter methods
+   public Point getTile() {
+      return tile;
    }
-   public int getYTile(){
-      return yTile;
-   }
-   public String getColor(){
-      return color;
+   public int getTeam() {
+      return team;
    }
 
-   public boolean isCurrentlyTracking(){
-      return currentlyTracking;
-   }
+   public abstract ArrayList<Point> validTiles();
 }

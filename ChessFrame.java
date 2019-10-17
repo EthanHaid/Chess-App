@@ -12,7 +12,7 @@ public class ChessFrame {
       frame.setTitle("Chess");
       frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-      frame.add(new BoardComponent());
+      frame.add(new GameComponent());
 
       frame.setVisible(true);
    }
