@@ -2,12 +2,12 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.ArrayList;
 
-public class Pawn extends Piece {
-   private final static String[] IMGS = {"images/whites/pawn.png", "images/blacks/pawn.png"};
+public class Queen extends Piece {
+   private final static String[] IMGS = {"images/whites/queen.png", "images/blacks/queen.png"};
 
    private boolean hasMoved = false; //if the piece has moved since the start of the game
 
-   public Pawn(Board board, int team, int xTile, int yTile) {
+   public Queen(Board board, int team, int xTile, int yTile) {
       super(board, team, xTile, yTile);
       super.setImg(IMGS[team]);
    }

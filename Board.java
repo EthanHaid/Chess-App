@@ -12,8 +12,8 @@ public class Board {
    private static final Color HIGHLIGHT_COLOR = Color.YELLOW; // color of the highlighted tiles
    private static final Color BORDER_COLOR = Color.BLACK; //color of the outlines
 
-   //pos of the upper left corner
-   private Point pos = new Point();
+   private ArrayList<Point> validTiles; //tiles to be highlighted when drawn
+   private Point pos; //pos of the upper left corner
    //width and height of the board
    private double width;
    private double height;
@@ -21,7 +21,12 @@ public class Board {
    private double tileWidth;
    private double tileHeight;
 
-   public void draw(Graphics2D g2, ArrayList<Point> validTiles) {
+   public Board() {
+      pos = new Point();
+      resize(0, 0);
+   }
+
+   public void draw(Graphics2D g2) {
       //draws outline of board
       Rectangle2D.Double board = new Rectangle2D.Double(pos.x, pos.y, width, height);
       g2.setColor(BORDER_COLOR);
@@ -31,7 +36,7 @@ public class Board {
       Rectangle2D.Double tile;
       double xDraw;
       double yDraw = pos.y;
-      boolean isValid = false;
+      boolean isValid;
       for(int i = 0; i < NUM_TILES; i++) {
          xDraw = pos.x;
          for(int j = 0; j < NUM_TILES; j++) { //for every tile on the board
@@ -45,9 +50,6 @@ public class Board {
                tile = new Rectangle2D.Double(xDraw, yDraw, tileWidth, tileHeight);
                g2.setColor(HIGHLIGHT_COLOR);
                g2.fill(tile);
-               g2.setColor(BORDER_COLOR);
-               //TODO: make the outline thicker.
-               g2.draw(tile);
             } else if(i % 2 != j % 2) {
                tile = new Rectangle2D.Double(xDraw, yDraw, tileWidth, tileHeight);
                g2.setColor(FILL_COLOR);
@@ -71,6 +73,10 @@ public class Board {
       tileHeight = tileWidth;
    }
 
+   public void setValidTiles(ArrayList<Point> valids) {
+      validTiles = valids;
+   }
+
    //getter methods
    public int getNumTiles() {
       return NUM_TILES;
@@ -83,5 +89,11 @@ public class Board {
    }
    public double getTileHeight() {
       return tileHeight;
+   }
+   public double getWidth() {
+      return width;
+   }
+   public double getHeight() {
+      return height;
    }
 }

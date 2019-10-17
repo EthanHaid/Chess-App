@@ -14,8 +14,10 @@ public abstract class Piece {
    private final Board board; //stores the board reference
    private final int team; // stores the pieces team. 0 == white, 1 == black
 
+   private Image fullSizeImg; //the unscaled image of the piece
    private Image img; //the sized image of the piece
    private boolean currentlyTracking = false; //if the piece is tracking the mouse
+   private boolean isAlive = true;
    private Point mouse; //last known coordinate of the mouse
    private Point tile; //location of the piece
    private Point pos; //x,y position of the top left corner of the piece
@@ -31,20 +33,23 @@ public abstract class Piece {
       mouse = new Point();
    }
 
-
    public void draw(Graphics2D g2) {
-      if(currentlyTracking) {
-         pos.x = (int)(mouse.x - (board.getTileWidth() * TRACKING_MULTIPLIER) / 2);
-         pos.y = (int)(mouse.y - (board.getTileWidth() * TRACKING_MULTIPLIER) / 2);
+      if(isAlive) {
+         if(currentlyTracking) {
+            pos.x = (int)(mouse.x - (board.getTileWidth() * TRACKING_MULTIPLIER) / 2);
+            pos.y = (int)(mouse.y - (board.getTileWidth() * TRACKING_MULTIPLIER) / 2);
+         } else {
+            pos.x = (int)(board.getPos().x + (tile.x * board.getTileWidth()));
+            pos.y = (int)(board.getPos().y + (tile.y * board.getTileHeight()));
+         }
+         g2.drawImage(img, pos.x, pos.y, null);
       } else {
-         pos.x = (int)(board.getPos().x + (tile.x * board.getTileWidth()));
-         pos.y = (int)(board.getPos().y + (tile.y * board.getTileHeight()));
+         //TODO: if you want to make a graveyard, draw the piece's location here. move the g2.drawImage (from above) down below the else.
       }
-      g2.drawImage(img, pos.x, pos.y, null);
+
    }
 
    public void resize() {
-      //TODO: activate the tracking multiplier. also request a resize of tracked piece after begin or end tracking. make sure this isn't too laggy. hope.
       if(currentlyTracking) {
          w = (int)(board.getTileWidth() * TRACKING_MULTIPLIER);
          h = (int)(board.getTileHeight() * TRACKING_MULTIPLIER);
@@ -52,12 +57,12 @@ public abstract class Piece {
          w = (int)board.getTileWidth();
          h = (int)board.getTileHeight();
       }
-      img = img.getScaledInstance(w, h, Image.SCALE_SMOOTH);
+      img = fullSizeImg.getScaledInstance(w, h, Image.SCALE_SMOOTH);
    }
 
    public void setImg(String url) {
       try{
-         img = ImageIO.read(new File(url));
+         fullSizeImg = ImageIO.read(new File(url));
       } catch(IOException e){
          //TODO: is this really what i want in here?
          e.printStackTrace();
@@ -71,8 +76,11 @@ public abstract class Piece {
    public void setPosition(Point aTile) {
       tile = aTile;
    }
-   public void setMouse(Point aMouse) {
+   public void setMousePos(Point aMouse) {
       mouse = aMouse;
+   }
+   public void setIsAlive(boolean setTo) {
+      isAlive = setTo;
    }
 
    //getter methods

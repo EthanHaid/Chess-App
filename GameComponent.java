@@ -2,7 +2,7 @@ import javax.swing.JComponent;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-//TODO: optimize this import:
+//TODO: optimize this import
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Timer;
@@ -12,103 +12,74 @@ public class GameComponent extends JComponent implements MouseListener {
    private static final int REFRESH_RATE = 30; //number of ms per screen refresh
 
    private final Board board; //playing board
-   private final ArrayList<ArrayList<Piece>> pieces; //array of all game pieces
+   private final Player[] players; //the two players playing
 
-   private int playerTurn = 0; //stores which player's turn it is. Either 0 or 1
-   private boolean mouseDown = false; //stores if the mouse button is pressed or not
-   private Piece tracking = null; //the piece currently tracking the mouse
-   private ArrayList<Point> validTiles; //tiles to highlight on the board
+   private int playerTurn;
+   private Point mousePos;
+   private boolean mouseDown = false;
    //stores previous frame dimensions
    private int cachedFrameWidth = 0;
    private int cachedFrameHeight = 0;
 
-   //GameComponent constructor
-   public GameComponent() {
+   public GameComponent() { //constructor
+
       //creates a new timer, update() every REFRESH_RATE ms
       java.util.Timer timer = new java.util.Timer();
       timer.scheduleAtFixedRate(new update(), REFRESH_RATE, REFRESH_RATE);
 
       addMouseListener(this); //mouse click listener
 
-      //creates new board and pieces
-      board = new Board();
-      pieces = new ArrayList<ArrayList<Piece>>();
-      pieces.add(new ArrayList<Piece>());
-      pieces.add(new ArrayList<Piece>());
+      board = new Board(); //creates new board
+      //TODO: create a graveyard
 
-      //for each team, create the main pieces
-      for(int i=0; i<2; i++) {
-         //TODO: the pieces created here will not be pawns
-         //pieces.get(i).add(new Pawn(board, i, 0, i * (board.getNumTiles() - 1)));
-      }
-      //create the pawns
-      for(int i=0; i<board.getNumTiles(); i++) {
-         pieces.get(0).add(new Pawn(board, 1, i, 1));
-      }
-      for(int i=0; i<board.getNumTiles(); i++) {
-         pieces.get(1).add(new Pawn(board, 0, i, board.getNumTiles() - 2));
+      Player player1 = new User(board, 1, 0); //creates Player(board, starting position, team color)
+      Player player2 = new User(board, 0, 1);
+      //Player player2 = new NoahAI(board, 0, 1);
+      //Player player2 = new JenAI(board, 0, 1);
+
+      playerTurn = (player1.getTeam() == 0)? 0 : 1; //sets the white team to have first turn.
+      player1.setOpponent(player2);
+      player2.setOpponent(player1);
+      players = new Player[] {player1, player2};
+      for(Player p : players) {
+         p.createPieces();
       }
    }
-
 
    public void paint(Graphics g) {
       final Graphics2D g2 = (Graphics2D) g;
       final int frameWidth = getWidth();
       final int frameHeight = getHeight();
+      mousePos = getMousePosition();
 
       g2.clearRect(0, 0, frameWidth, frameHeight); //clears the background for fresh drawing
 
       if(frameChanged(frameWidth, frameHeight)) { //if the frame changed sizes, resize models.
          board.resize(frameWidth, frameHeight);
-         for(ArrayList<Piece> a : pieces) {
-            for(Piece p : a) {
-               p.resize();
-            }
+         for(Player p : players) {
+            p.resize();
          }
       }
 
-      board.draw(g2, validTiles); //draws the board
-
-      Point mouse = getMousePosition();
-      if(mouse != null) { //TODO: top down design the SHIT out of this
-         if(tracking == null && mouseDown && onBoard(mouse)) { //pickup a piece
-            tracking = pieceAt(playerTurn, mouse);
-            if(tracking != null) {
-               tracking.setCurrentlyTracking(true);
-               tracking.resize();
-               validTiles = tracking.validTiles();
-            }
-         } else if(tracking != null && mouseDown == false) { //drop a piece
-            tracking.setCurrentlyTracking(false);
-            tracking.resize();
-            validTiles = null;
-            if(onBoard(mouse) && pieceAt(playerTurn, mouse) == null) { //TODO: one of these conditions has to include the "valid" location param of Piece
-               tracking.setPosition(tileAt(mouse)); //drop piece new coordinate
-               tracking = pieceAt(((playerTurn == 0)? 1 : 0), mouse); //detect enimy piece
-               if(tracking != null) { //if enimy piece at location, remove
-                  pieces.get((playerTurn == 0)? 1 : 0).remove(tracking);
-               }
-               playerTurn = (playerTurn == 0)? 1 : 0;
-            }
-            tracking = null; //stop watching the tracking piece
-         }
+      //here is where the take-a-turn code is implimented
+      players[playerTurn].setMoveWasMade(false);
+      if(players[playerTurn] instanceof User) { //update User with the mouse data
+         ((User)players[playerTurn]).setMousePos(mousePos);
+         ((User)players[playerTurn]).setMouseDown(mouseDown);
+      }
+      players[playerTurn].makeMove(); //player make its move
+      if(players[playerTurn].getMoveWasMade()) { //next player's turn
+         playerTurn = (playerTurn == 0)? 1 : 0;
       }
 
-      //draw the pieces which arent tracking the mouse
-      for(ArrayList<Piece> a : pieces){
-         for(Piece p : a){
-            if(p != tracking){
-               p.draw(g2);
-            }
-         }
+      board.draw(g2); //draws the board
+      for(Player p : players) { //draws the pieces
+         p.draw(g2);
       }
-
-      //draw the piece tracking the mouse
-      if(tracking !=null) {
-         if(mouse != null){
-            tracking.setMouse(mouse);
+      if(players[playerTurn] instanceof User) {
+         if(((User)players[playerTurn]).getTracking() != null) {
+            ((User)players[playerTurn]).getTracking().draw(g2);
          }
-         tracking.draw(g2);
       }
    }
 
@@ -120,38 +91,6 @@ public class GameComponent extends JComponent implements MouseListener {
       }
       cachedFrameWidth = newFrameWidth;
       cachedFrameHeight = newFrameHeight;
-      return true;
-   }
-
-   //returns the piece at the given tileX, tileY coordinates
-   private Piece pieceAt(int team, Point point) {
-      if(point == null) return null;
-      point = tileAt(point);
-      for(Piece p : pieces.get(team)) {
-         if(point.equals(p.getTile())) {
-            return p;
-         }
-      }
-      return null;
-   }
-
-   //returns the  tile which the coordinate is upon
-   private Point tileAt(Point point) {
-      if(point == null || point.x < board.getPos().x || point.y < board.getPos().y) {
-         return new Point(-1, -1);
-      }
-      return new Point(((int)(point.x - board.getPos().x) / (int) board.getTileWidth()),
-         ((int)(point.y - board.getPos().y) / (int) board.getTileHeight()));
-   }
-
-   //returns true if the coordinates are on the playing board, else false
-   private boolean onBoard(Point point) {
-      if(point == null) return false;
-      point = tileAt(point);
-      if(point.x < 0 || point.y < 0 ||
-         point.x >= board.getNumTiles() || point.y >= board.getNumTiles()) {
-         return false;
-      }
       return true;
    }
 
